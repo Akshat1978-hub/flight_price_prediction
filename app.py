@@ -6,7 +6,8 @@ import os
 
 import plotly.express as px
 import plotly.graph_objects as go
-
+if not os.path.exists("model.pkl"):
+    train_model()
 # -------------------------
 # PAGE CONFIG
 # -------------------------
