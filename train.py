@@ -1,15 +1,108 @@
-import pandas as pd, joblib
+import os
+import pandas as pd
+import numpy as np
+import joblib
+from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.ensemble import RandomForestRegressor
-df=pd.read_csv("Clean_Dataset.csv")
-if "Unnamed: 0" in df.columns: df=df.drop(columns=["Unnamed: 0"])
-X=df.drop(columns=["price"]); y=df["price"]
-cat=X.select_dtypes(include="object").columns
-num=[c for c in X.columns if c not in cat]
-pre=ColumnTransformer([("cat",OneHotEncoder(handle_unknown="ignore"),cat)],remainder="passthrough")
-model=Pipeline([("pre",pre),("model",RandomForestRegressor(n_estimators=100,random_state=42))])
-model.fit(X,y)
-joblib.dump(model,"model.pkl")
-print("saved model.pkl")
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.impute import SimpleImputer
+from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, GradientBoostingRegressor
+from xgboost import XGBRegressor
+from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+
+def train_and_save_model(data_path="flight_dataset.csv", model_path="model.pkl", meta_path="model_metadata.pkl"):
+    print("🚀 Initializing Pipeline Training and Selection Matrix...")
+    if not os.path.exists(data_path):
+        raise FileNotFoundError(f"Core asset mismatch: '{data_path}' could not be located.")
+        
+    df = pd.read_csv(data_path)
+    
+    # Strip any accidental leading/trailing whitespace from column headers
+    df.columns = df.columns.str.strip()
+    
+    target_col = "price"
+    if target_col not in df.columns:
+        raise ValueError(f"Target vector '{target_col}' missing from target dataframe.")
+        
+    X = df.drop(columns=[target_col])
+    y = df[target_col]
+    
+    # Auto-detection schema
+    categorical_cols = X.select_dtypes(include=['object', 'category']).columns.tolist()
+    numerical_cols = X.select_dtypes(include=['int64', 'float64']).columns.tolist()
+    
+    print(f"📊 Auto-Detected Numerical Features: {numerical_cols}")
+    print(f"📊 Auto-Detected Categorical Features: {categorical_cols}")
+    
+    # Transformers
+    num_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='median')),
+        ('scaler', StandardScaler())
+    ])
+    
+    cat_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+    ])
+    
+    preprocessor = ColumnTransformer(transformers=[
+        ('num', num_transformer, numerical_cols),
+        ('cat', cat_transformer, categorical_cols)
+    ])
+    
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    models = {
+        "Random Forest Regressor": RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1),
+        "Extra Trees Regressor": ExtraTreesRegressor(n_estimators=100, random_state=42, n_jobs=-1),
+        "Gradient Boosting Regressor": GradientBoostingRegressor(n_estimators=100, random_state=42),
+        "XGBoost Regressor": XGBRegressor(n_estimators=100, random_state=42, n_jobs=-1)
+    }
+    
+    best_model_name = None
+    best_score = -float('inf')
+    best_pipeline = None
+    best_metrics = {}
+    
+    for name, model in models.items():
+        print(f"⏳ Training matrix entry: {name}...")
+        pipeline = Pipeline(steps=[('preprocessor', preprocessor), ('regressor', model)])
+        pipeline.fit(X_train, y_train)
+        
+        preds = pipeline.predict(X_test)
+        r2 = r2_score(y_test, preds)
+        mae = mean_absolute_error(y_test, preds)
+        rmse = np.sqrt(mean_squared_error(y_test, preds))
+        
+        print(f"   ✨ {name} -> R²: {r2:.4f} | MAE: {mae:.2f} | RMSE: {rmse:.2f}")
+        
+        if r2 > best_score:
+            best_score = r2
+            best_model_name = name
+            best_pipeline = pipeline
+            best_metrics = {"R2": r2, "MAE": mae, "RMSE": rmse}
+            
+    print(f"🏆 Champion Architecture: {best_model_name} with R²: {best_score:.4f}")
+    
+    # Store complete architecture pipeline
+    joblib.dump(best_pipeline, model_path)
+    
+    # Package clean metadata dictionary for operational use
+    unique_cat_values = {col: df[col].dropna().unique().tolist() for col in categorical_cols}
+    
+    metadata = {
+        "training_columns": X.columns.tolist(),
+        "categorical_columns": categorical_cols,
+        "numerical_columns": numerical_cols,
+        "best_model_name": best_model_name,
+        "best_score": best_score,
+        "metrics": best_metrics,
+        "unique_values": unique_cat_values
+    }
+    joblib.dump(metadata, meta_path)
+    print("💾 Core artifacts successfully compiled and exported.")
+    return metadata
+
+if __name__ == "__main__":
+    train_and_save_model()
