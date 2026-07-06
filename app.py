@@ -7,7 +7,7 @@ import joblib
 import os
 from train import train_and_save_model
 
-# 1. Page Configuration Configuration
+# 1. Page Configuration
 st.set_page_config(
     page_title="Flight Price Intelligence Portal",
     page_icon="✈️",
@@ -183,8 +183,6 @@ elif page_selection == "Price Engine Unit":
     if st.button("✨ Evaluate & Execute Inference Pipeline"):
         try:
             payload_df = pd.DataFrame([input_payload])
-            
-            # Match structural feature schema layout safely
             payload_df = payload_df[train_cols]
             
             prediction = model_pipeline.predict(payload_df)[0]
@@ -315,16 +313,18 @@ elif page_selection == "Visual Analytics Analytics":
         h1, h2 = st.columns(2)
         with h1:
             st.markdown("#### 🔝 Top 10 Most Expensive Flight Manifests")
-            st.dataframe(df_filtered.sort_values(by="price", ascending=False).head(10)[["airline", "flight", "source_city", "destination_city", "class", "price"]], use_container_width=True)
+            columns_to_show = ["airline", "source_city", "destination_city", "class", "price"]
+            available_cols = [col for col in columns_to_show if col in df_filtered.columns]
+            st.dataframe(df_filtered.sort_values(by="price", ascending=False).head(10)[available_cols], use_container_width=True)
         with h2:
             st.markdown("#### 📉 Top 10 High Efficiency Value Flight Entries")
-            st.dataframe(df_filtered.sort_values(by="price", ascending=True).head(10)[["airline", "flight", "source_city", "destination_city", "class", "price"]], use_container_width=True)
+            st.dataframe(df_filtered.sort_values(by="price", ascending=True).head(10)[available_cols], use_container_width=True)
 
         h3, h4 = st.columns(2)
         with h3:
             st.markdown("#### 🌆 Average Terminal Value Grouping across Source City Systems")
             st.dataframe(df_filtered.groupby("source_city")["price"].mean().reset_index().sort_values(by="price", ascending=False), use_container_width=True)
-        with h4:
+        with h4: # FIX: Changed from 'with d4:' to 'with h4:'
             st.markdown("#### 🏙️ Average Terminal Outflow Ticket Valuations across Destination Zones")
             st.dataframe(df_filtered.groupby("destination_city")["price"].mean().reset_index().sort_values(by="price", ascending=False), use_container_width=True)
 
