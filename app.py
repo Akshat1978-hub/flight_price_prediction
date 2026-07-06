@@ -88,7 +88,7 @@ def load_raw_dataset(path):
 df_raw = load_raw_dataset(DATA_FILE)
 
 if df_raw is None:
-    st.error(f"🚨 Essential system source '{DATA_FILE}' is missing. Please populate the root workspace file structure.")
+    st.error(f"🚨 Essential system source '{DATA_FILE}' is missing.")
     st.stop()
 
 # Auto-generation framework trigger if artifacts are absent
@@ -106,7 +106,7 @@ model_pipeline = joblib.load(MODEL_FILE)
 metadata = joblib.load(META_FILE)
 
 # 4. Global Sidebar Routing Context
-st.sidebar.markdown("<h2 style='text-align: center; color: white;'>✈️ Flight Portal</h2>", unsafe_html=True)
+st.sidebar.markdown("<h2 style='text-align: center; color: white;'>✈️ Flight Portal</h2>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
 page_selection = st.sidebar.radio(
     "Navigate Terminal System",
@@ -119,16 +119,15 @@ if page_selection == "Dashboard Overview":
     st.markdown("### Production-Grade Enterprise Analytics & Predictive Inference Framework")
     st.markdown("---")
     
-    # Micro-metrics Row Layout
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        st.markdown(f"<div class='kpi-card'><h3>📊 Observations</h3><p style='font-size:1.8rem; font-weight:700; color:#3b82f6;'>{df_raw.shape[0]:,}</p></div>", unsafe_html=True)
+        st.markdown(f"<div class='kpi-card'><h3>📊 Observations</h3><p style='font-size:1.8rem; font-weight:700; color:#3b82f6;'>{df_raw.shape[0]:,}</p></div>", unsafe_allow_html=True)
     with c2:
-        st.markdown(f"<div class='kpi-card'><h3>📐 Matrix Features</h3><p style='font-size:1.8rem; font-weight:700; color:#10b981;'>{df_raw.shape[1]}</p></div>", unsafe_html=True)
+        st.markdown(f"<div class='kpi-card'><h3>📐 Matrix Features</h3><p style='font-size:1.8rem; font-weight:700; color:#10b981;'>{df_raw.shape[1]}</p></div>", unsafe_allow_html=True)
     with c3:
-        st.markdown(f"<div class='kpi-card'><h3>🚫 Missing Elements</h3><p style='font-size:1.8rem; font-weight:700; color:#ef4444;'>{df_raw.isnull().sum().sum()}</p></div>", unsafe_html=True)
+        st.markdown(f"<div class='kpi-card'><h3>🚫 Missing Elements</h3><p style='font-size:1.8rem; font-weight:700; color:#ef4444;'>{df_raw.isnull().sum().sum()}</p></div>", unsafe_allow_html=True)
     with c4:
-        st.markdown(f"<div class='kpi-card'><h3>🤖 Model Core</h3><p style='font-size:1.2rem; font-weight:700; color:#a855f7;'>{metadata['best_model_name']}</p></div>", unsafe_html=True)
+        st.markdown(f"<div class='kpi-card'><h3>🤖 Model Core</h3><p style='font-size:1.2rem; font-weight:700; color:#a855f7;'>{metadata['best_model_name']}</p></div>", unsafe_allow_html=True)
 
     st.markdown("### 📋 Production Dataset Preview")
     st.dataframe(df_raw.head(15), use_container_width=True)
@@ -145,19 +144,16 @@ if page_selection == "Dashboard Overview":
 # --- PAGE 2: PRICE PREDICTION PAGE ---
 elif page_selection == "Price Engine Unit":
     st.markdown("# 🤖 High-Fidelity Price Prediction Unit")
-    st.markdown("##### Direct continuous value vector prediction leveraging downstream optimized pipeline transforms.")
+    st.markdown("##### Direct continuous value prediction using downstream pipeline transforms.")
     st.markdown("---")
     
     st.markdown("### Input Trip Configuration Matrix")
     
-    # Extract structural inputs
     cached_uniques = metadata["unique_values"]
     num_cols = metadata["numerical_columns"]
     train_cols = metadata["training_columns"]
     
     input_payload = {}
-    
-    # Construct fluid context columns dynamically
     ui_columns = st.columns(2)
     
     idx = 0
@@ -193,9 +189,8 @@ elif page_selection == "Price Engine Unit":
                     <div class='premium-price'>₹ {prediction:,.2f}</div>
                     <p style='color: #94a3b8; margin-top: 1rem;'>System Engine Verification Confidence: <b>{(metadata['best_score']*100):.2f}% (R²)</b></p>
                 </div>
-            """, unsafe_html=True)
+            """, unsafe_allow_html=True)
             
-            st.info("💡 **Operational Parameters Note:** Prediction output is structural data generated utilizing real-time parameter processing matrices via generalized scaling configurations.")
         except Exception as e:
             st.error(f"❌ Structural error vector encountered during inference compilation: {str(e)}")
 
@@ -204,8 +199,7 @@ elif page_selection == "Visual Analytics Analytics":
     st.markdown("# 📊 Advanced Exploratory Analytics Dashboard")
     st.markdown("---")
     
-    # Real-Time Interactive Filters Context Matrix
-    st.markdown("### 🎛️ Live Analytics Filtering Controls")
+    st.markdown("### 🛞 Live Analytics Filtering Controls")
     f_cols = st.columns(5)
     
     with f_cols[0]:
@@ -219,7 +213,6 @@ elif page_selection == "Visual Analytics Analytics":
     with f_cols[4]:
         sel_stops = st.multiselect("Route Intermediary Stops", options=df_raw["stops"].unique(), default=df_raw["stops"].unique())
         
-    # Execution slice computation
     mask = (
         df_raw["airline"].isin(sel_airline) & 
         df_raw["class"].isin(sel_class) & 
@@ -232,7 +225,6 @@ elif page_selection == "Visual Analytics Analytics":
     if df_filtered.empty:
         st.warning("⚠️ High dimensional search parameters yield an empty matrix selection. Realign dashboard controls.")
     else:
-        # A. Price Distribution Analytics
         st.markdown("## 💰 A. Structural Price Distribution Analytics")
         a1, a2 = st.columns(2)
         with a1:
@@ -242,79 +234,71 @@ elif page_selection == "Visual Analytics Analytics":
             fig_box = px.box(df_filtered, y="price", x="class", title="Price Outlier Box Metric Layout by Seating Class", color="class", color_discrete_sequence=["#10b981", "#6366f1"])
             st.plotly_chart(fig_box, use_container_width=True)
             
-        # B. Airline Ecosystem Metric Sets
         st.markdown("## ✈️ B. Airline Aviation Market Component Profiles")
         b1, b2 = st.columns(2)
         with b1:
             airline_counts = df_filtered["airline"].value_counts().reset_index()
-            fig_pie = px.pie(airline_counts, names="airline", values="count", title="Operator Volumetric Execution Capacity Share", hole=0.4, color_discrete_sequence=px.colors.qualitative.Pastel)
+            fig_pie = px.pie(airline_counts, names="airline", values="count", title="Operator Volumetric Share", hole=0.4, color_discrete_sequence=px.colors.qualitative.Pastel)
             st.plotly_chart(fig_pie, use_container_width=True)
         with b2:
             fig_air_avg = px.bar(df_filtered.groupby("airline")["price"].mean().reset_index(), x="airline", y="price", title="Average Target Ticket Cost Across Operator Fleets", color="airline")
             st.plotly_chart(fig_air_avg, use_container_width=True)
             
-        # C. Geographical Flight Vector Topography
         st.markdown("## 🗺️ C. Geographical Routing Cross-Reference Matrices")
         c1, c2 = st.columns(2)
         with c1:
-            fig_src = px.histogram(df_filtered, x="source_city", title="Operational Trajectory Density Count by Origin City", color_discrete_sequence=["#f59e0b"])
+            fig_src = px.histogram(df_filtered, x="source_city", title="Operational Density by Origin City", color_discrete_sequence=["#f59e0b"])
             st.plotly_chart(fig_src, use_container_width=True)
         with c2:
-            fig_dst = px.histogram(df_filtered, x="destination_city", title="Hub Traffic Destination Targets Inflow Density", color_discrete_sequence=["#ec4899"])
+            fig_dst = px.histogram(df_filtered, x="destination_city", title="Traffic Destination Density", color_discrete_sequence=["#ec4899"])
             st.plotly_chart(fig_dst, use_container_width=True)
             
-        # Matrix Pivot Structural Heatmap Execution
-        st.markdown("### Hub-to-Hub Flight Operator Target Pricing Cross-Matrix Density Grid")
+        st.markdown("### Hub-to-Hub Flight Operator Target Pricing Heatmap")
         pivot_df = df_filtered.pivot_table(index="airline", columns="source_city", values="price", aggfunc="mean").fillna(0)
-        fig_heat = px.imshow(pivot_df, text_auto=True, labels=dict(x="Source City Location Axis", y="Airline Enterprise Vendor", color="Mean Price Valuation (₹)"), color_continuous_scale="Viridis")
+        fig_heat = px.imshow(pivot_df, text_auto=True, labels=dict(x="Source City Location Axis", y="Airline Vendor", color="Mean Price (₹)"), color_continuous_scale="Viridis")
         st.plotly_chart(fig_heat, use_container_width=True)
 
-        # D. Class Configuration & Route Obstruction Layouts
-        st.markdown("## 💺 D. Class Configuration & Structural Route Intermediary Profiling")
+        st.markdown("## 💺 D. Class Configuration & Route Intermediary Profiling")
         d1, d2 = st.columns(2)
         with d1:
-            fig_class_violin = px.violin(df_filtered, y="price", x="class", color="class", box=True, points="all", title="Continuous Pricing Dispersion Structural Violin Map by Class Grouping")
+            fig_class_violin = px.violin(df_filtered, y="price", x="class", color="class", box=True, points="all", title="Pricing Dispersion Violin Map by Class")
             st.plotly_chart(fig_class_violin, use_container_width=True)
         with d2:
-            fig_stops_avg = px.bar(df_filtered.groupby("stops")["price"].mean().reset_index(), x="stops", y="price", title="Mean Ticket Pricing Escalation Matrix via Structural Routing Nodes", color="stops", color_discrete_sequence=px.colors.sequential.Agrid)
+            fig_stops_avg = px.bar(df_filtered.groupby("stops")["price"].mean().reset_index(), x="stops", y="price", title="Mean Ticket Pricing by Stops", color="stops", color_discrete_sequence=px.colors.sequential.Agrid)
             st.plotly_chart(fig_stops_avg, use_container_width=True)
 
-        # E. Chrono Temporal Domain Profiles
         st.markdown("## ⏰ E. Chronological Temporal Flight Allocation Boundaries")
         e1, e2 = st.columns(2)
         with e1:
-            fig_dep = px.box(df_filtered, x="departure_time", y="price", title="Departure Time Period Structural Vector Pricing Spectrum", color="departure_time")
+            fig_dep = px.box(df_filtered, x="departure_time", y="price", title="Departure Time Period Pricing Spectrum", color="departure_time")
             st.plotly_chart(fig_dep, use_container_width=True)
         with e2:
-            fig_arr = px.box(df_filtered, x="arrival_time", y="price", title="Downstream Arrival Temporal Sequence Grouping Values", color="arrival_time")
+            fig_arr = px.box(df_filtered, x="arrival_time", y="price", title="Arrival Time Period Pricing Spectrum", color="arrival_time")
             st.plotly_chart(fig_arr, use_container_width=True)
 
-        # F. Continuous Domain Metric Spatial Analysis
         st.markdown("## 📉 F. Continuous Spatial Variable Interactions")
         f1, f2 = st.columns(2)
         with f1:
-            fig_scat1 = px.scatter(df_filtered, x="duration", y="price", color="airline", opacity=0.5, title="Dimensional Spatial Scatter Matrix: Flight Duration Hours vs Price Vector")
+            fig_scat1 = px.scatter(df_filtered, x="duration", y="price", color="airline", opacity=0.5, title="Flight Duration Hours vs Price Vector")
             st.plotly_chart(fig_scat1, use_container_width=True)
         with f2:
-            fig_scat2 = px.scatter(df_filtered, x="days_left", y="price", color="class", opacity=0.5, title="Booking Horizon Dynamics Matrix: Days Remaining Prior to Takeoff vs Pricing Valuation")
+            fig_scat2 = px.scatter(df_filtered, x="days_left", y="price", color="class", opacity=0.5, title="Days Remaining Prior to Takeoff vs Price Vector")
             st.plotly_chart(fig_scat2, use_container_width=True)
 
-        # G. Multi-Variate Covariance Metric Profiling
-        st.markdown("## 🔗 G. Covariance Correlation Matrix of Extracted Numerical Metrics")
+        st.markdown("## 🔗 G. Covariance Correlation Matrix")
         num_corr_features = ["duration", "days_left", "price"]
         available_corr_cols = [c for c in num_corr_features if c in df_filtered.columns]
         if len(available_corr_cols) > 1:
             corr_mat = df_filtered[available_corr_cols].corr()
-            fig_corr = px.imshow(corr_mat, text_auto=True, color_continuous_scale="RdBu_r", zmin=-1, zmax=1, title="Pearson Multi-Variate Feature Correlation Matrix")
+            fig_corr = px.imshow(corr_mat, text_auto=True, color_continuous_scale="RdBu_r", zmin=-1, zmax=1, title="Pearson Feature Correlation Matrix")
             st.plotly_chart(fig_corr, use_container_width=True)
 
-        # H. Real-Time Deep Insight Matrix Profiles
         st.markdown("## 🔍 H. Deep Diagnostic Insights Matrix Profiles")
         h1, h2 = st.columns(2)
+        columns_to_show = ["airline", "source_city", "destination_city", "class", "price"]
+        available_cols = [col for col in columns_to_show if col in df_filtered.columns]
         with h1:
             st.markdown("#### 🔝 Top 10 Most Expensive Flight Manifests")
-            columns_to_show = ["airline", "source_city", "destination_city", "class", "price"]
-            available_cols = [col for col in columns_to_show if col in df_filtered.columns]
             st.dataframe(df_filtered.sort_values(by="price", ascending=False).head(10)[available_cols], use_container_width=True)
         with h2:
             st.markdown("#### 📉 Top 10 High Efficiency Value Flight Entries")
@@ -322,10 +306,10 @@ elif page_selection == "Visual Analytics Analytics":
 
         h3, h4 = st.columns(2)
         with h3:
-            st.markdown("#### 🌆 Average Terminal Value Grouping across Source City Systems")
+            st.markdown("#### 🌆 Average Ticket Cost by Source City")
             st.dataframe(df_filtered.groupby("source_city")["price"].mean().reset_index().sort_values(by="price", ascending=False), use_container_width=True)
-        with h4: # FIX: Changed from 'with d4:' to 'with h4:'
-            st.markdown("#### 🏙️ Average Terminal Outflow Ticket Valuations across Destination Zones")
+        with h4:
+            st.markdown("#### 🏙️ Average Ticket Cost by Destination City")
             st.dataframe(df_filtered.groupby("destination_city")["price"].mean().reset_index().sort_values(by="price", ascending=False), use_container_width=True)
 
 # --- PAGE 4: ABOUT PAGE ---
